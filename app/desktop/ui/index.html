@@ -1,0 +1,174 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="color-scheme" content="dark" />
+    <title>Codex Keyboard</title>
+    <link rel="stylesheet" href="./styles.css" />
+    <script type="module" src="./main.js"></script>
+  </head>
+  <body>
+    <div class="app">
+      <aside class="sidebar">
+        <div class="side-top">
+          <div class="brand">Codex Keyboard</div>
+          <button
+            id="refresh"
+            class="icon-button"
+            type="button"
+            aria-label="刷新"
+            title="刷新"
+          >
+            <svg aria-hidden="true" viewBox="0 0 24 24" width="16" height="16">
+              <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8" />
+              <path d="M21 3v5h-5" />
+              <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16" />
+              <path d="M8 16H3v5" />
+            </svg>
+          </button>
+        </div>
+        <p class="side-label">槽位 <span id="task-count"></span></p>
+        <nav id="slots" class="threads" aria-label="四个槽位"></nav>
+        <div class="side-foot">
+          <button id="configure-lan" class="thread side-link" type="button">
+            <span class="thread-key">网</span>
+            <span class="thread-copy">
+              <span class="thread-title">网络</span>
+              <span class="thread-preview">选择 Wi-Fi，密码自动匹配</span>
+            </span>
+          </button>
+          <div id="status-band" class="status-line checking">
+            <span id="status-dot" class="status-dot checking"></span>
+            <div>
+              <p id="status-title" class="status-title">正在连接 Host</p>
+              <p id="status-detail" class="status-detail">等待本地服务</p>
+            </div>
+          </div>
+          <p class="side-meta">
+            <span id="provider-dot" class="provider-dot"></span>
+            <span id="provider-state">语音检测中</span>
+          </p>
+          <details class="side-more">
+            <summary>设备</summary>
+            <p class="side-meta faint"><span id="asr-model">--</span></p>
+            <p class="side-meta faint">
+              <span id="tts-model">--</span> · <span id="tts-voice">--</span>
+            </p>
+            <p class="side-meta faint">
+              <span id="host-version">--</span> · PID <span id="host-pid">--</span>
+            </p>
+            <p id="last-updated" class="side-meta faint">尚未收到状态</p>
+            <p class="side-meta faint" hidden>
+              <span id="host-socket"></span>
+              <span id="database-schema"></span>
+            </p>
+          </details>
+        </div>
+      </aside>
+
+      <main class="stage">
+        <section id="slot-view" class="stage-view">
+          <div id="slot-reading" class="reading">
+            <header class="doc-head">
+              <div class="head-copy">
+                <p id="detail-kicker" class="kicker">槽位 1</p>
+                <h1 id="detail-title">未绑定</h1>
+                <p id="detail-meta" class="stage-meta"></p>
+              </div>
+              <button id="detail-manage" class="text-button" type="button" hidden>
+                更换任务
+              </button>
+              <form id="bind-bar" class="bind-panel">
+                <select id="detail-task" aria-label="选择要绑定的任务"></select>
+                <div class="bind-actions">
+                  <button id="detail-bind" class="primary" type="submit">绑定</button>
+                  <button id="detail-create" class="ghost" type="button">新建</button>
+                </div>
+              </form>
+            </header>
+            <div id="detail-replies" class="transcript"></div>
+          </div>
+        </section>
+
+        <section id="network-view" class="stage-view" hidden>
+          <div class="reading">
+            <header class="doc-head">
+              <div class="head-copy">
+                <p class="kicker">设置</p>
+                <h1>网络</h1>
+              </div>
+            </header>
+            <form id="lan-form" class="settings-form">
+            <p class="stage-meta">
+              从这台 Mac 连过的网络里选。带 -5G 的名字会换成 2.4 GHz 名称，两组共用同一份密码。记住过的，选中后就已匹配。
+            </p>
+            <label>
+              名称
+              <select id="lan-network" aria-label="选择 Wi-Fi"></select>
+            </label>
+            <label id="lan-custom-label" hidden>
+              其他名称
+              <input id="lan-ssid" type="text" maxlength="32" autocomplete="off" spellcheck="false" />
+            </label>
+            <label id="lan-password-label">
+              密码
+              <input id="lan-password" type="password" maxlength="64" autocomplete="off" />
+            </label>
+            <p id="lan-match" class="stage-meta" hidden>
+              密码已匹配。这个 2.4 GHz 名称和带 -5G 的是同一组，直接写入即可。
+            </p>
+            <p id="lan-host" class="stage-meta"></p>
+            <p id="lan-error" class="form-error" role="alert"></p>
+            <div class="form-actions">
+              <button id="lan-forget" class="ghost" type="button" hidden>忘记</button>
+              <button id="lan-replace" class="ghost" type="button" hidden>更换密码</button>
+              <button id="lan-save" class="ghost" type="button">保存</button>
+              <button id="lan-confirm" class="primary" type="submit">写入键盘</button>
+            </div>
+          </form>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <dialog id="create-dialog" aria-labelledby="create-title">
+      <form id="create-form">
+        <h2 id="create-title">新建任务</h2>
+        <label class="dialog-field">
+          <span>助手</span>
+          <select id="create-provider">
+            <option value="codex">Codex</option>
+            <option value="grok">Grok</option>
+            <option value="claude">Claude</option>
+            <option value="deepseek">DeepSeek</option>
+          </select>
+        </label>
+        <p id="create-hint" class="create-hint"></p>
+        <label class="dialog-field">
+          <span>名称</span>
+          <input id="create-name" type="text" maxlength="40" placeholder="例如：晨会纪要" />
+        </label>
+        <label class="dialog-field">
+          <span>文件夹</span>
+          <button id="create-folder" class="folder-button" type="button">选择文件夹</button>
+        </label>
+        <p id="create-error" class="form-error" role="alert"></p>
+        <div class="dialog-actions">
+          <button id="create-cancel" class="ghost" type="button">取消</button>
+          <button id="create-confirm" class="primary" type="submit">确认</button>
+        </div>
+      </form>
+    </dialog>
+
+    <template id="slot-template">
+      <button class="thread" type="button">
+        <span class="thread-key talk-key"></span>
+        <span class="thread-copy">
+          <span class="thread-title slot-label"></span>
+          <span class="thread-preview slot-meta"></span>
+        </span>
+      </button>
+    </template>
+  </body>
+</html>
